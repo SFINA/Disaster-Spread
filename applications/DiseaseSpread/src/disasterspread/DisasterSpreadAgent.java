@@ -48,7 +48,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     //private HashMap<String,ArrayList<Double>> nodeHealthHistory;
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
-    private int maxIterations = 1;
+    private int maxIterations = 100;
     private int strategy = 0;
     
     // resource distribution parameters from paper
@@ -76,7 +76,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     @Override
     public void runFlowAnalysis() {
 //        for (int i = 1; i < getFlowNetwork().getNodes().size()+1; i++) {
-            getFlowNetwork().getNode(Integer.toString(2)).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, 1.);
+            getFlowNetwork().getNode(Integer.toString(nodeToInfect)).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, 1.);
             
             /* DAMAGEHISTORY is not loaded from files. It is initialized with current damage level and 
             updated in every iteration. */
@@ -119,8 +119,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 damageLevel.add(damageLevelPerIteration);
                 
             }
-//            loadInputData("time_1");
-//        }
+
     }
     
     /* Computes the recovery rate depending on current iteration (time) and recovery strategy */

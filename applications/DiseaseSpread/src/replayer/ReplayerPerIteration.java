@@ -39,8 +39,8 @@ public class ReplayerPerIteration {
     private int nodeToInfect;
     static boolean writeToFile=true;
 
-    public ReplayerPerIteration(String experimentSequenceNumber, int minLoad, int maxLoad){
-        this.nodeToInfect = 2;//nodeToInfect;
+    public ReplayerPerIteration(String experimentSequenceNumber, int minLoad, int maxLoad, int nodeToInfect){
+        this.nodeToInfect = nodeToInfect;
         this.expSeqNum=experimentSequenceNumber;
         this.expID="experiment-"+expSeqNum+"/";
         this.resultID="results/"+expSeqNum+"/";
@@ -84,11 +84,9 @@ public class ReplayerPerIteration {
             clearExperimentFile(resultLocation);
             resultLocation.mkdirs();
             
-            
-            damageStatus = new PrintWriter(new BufferedWriter(new FileWriter(resultID+"damageStatus.txt", true)));
-            damageLevel = new PrintWriter(new BufferedWriter(new FileWriter(resultID+"damageLevel.txt", true)));
+            damageStatus = new PrintWriter(new BufferedWriter(new FileWriter(resultID+"damageStatus_"+Integer.toString(nodeToInfect)+".txt", true)));
+            damageLevel = new PrintWriter(new BufferedWriter(new FileWriter(resultID+"damageLevel_"+Integer.toString(nodeToInfect)+".txt", true)));
 
-            
         }
         catch (IOException e) {
                 //exception handling left as an exercise for the reader
@@ -97,7 +95,7 @@ public class ReplayerPerIteration {
     
     public final static void clearExperimentFile(File experiment){
         File[] files = experiment.listFiles();
-        if(files!=null) { //some JVMs return null for empty dirs
+        if(files!=null) {
             for(File f: files) {
                 if(f.isDirectory()) {
                     clearExperimentFile(f);
@@ -109,7 +107,6 @@ public class ReplayerPerIteration {
         experiment.delete();
     }
     
-    
     private void closeFiles(){
         damageStatus.print("\n");
         damageLevel.print("\n");
@@ -119,8 +116,6 @@ public class ReplayerPerIteration {
     }
 
     public void replayResults(){
-//        this.printGlobalMetricsTags();
-//        this.calculatePeerResults(replayer.getCompleteLog());
         this.printLocalMetricsTags();
         replayer.replayTo(new MeasurementLoggerListener(){
             public void measurementEpochEnded(MeasurementLog log, int epochNumber){
@@ -139,7 +134,7 @@ public class ReplayerPerIteration {
         //BenchmarkAnalysis smh = new BenchmarkAnalysis(expID, 0, 1000);
         //smh.powerPerIteration;
         
-        for (int i=0; i<1; i++){ //42 or 114 is the total number of iterations, 41 is total number of lines
+        for (int i=0; i<100; i++){ //42 or 114 is the total number of iterations, 41 is total number of lines
         double epochNum=epochNumber;
         double avgDamageStatusPerEpoch=(log.getAggregateByEpochNumber(epochNumber, "nodeDamageStatus"+Integer.toString(i)).getAverage());
         double avgDamageLevelPerEpoch=(log.getAggregateByEpochNumber(epochNumber, "nodeDamageLevel"+Integer.toString(i)).getAverage());
