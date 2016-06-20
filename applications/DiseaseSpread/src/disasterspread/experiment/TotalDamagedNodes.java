@@ -33,7 +33,7 @@ import protopeer.Peer;
 import protopeer.PeerFactory;
 import protopeer.SimulatedExperiment;
 import protopeer.util.quantities.Time;
-import replayer.BenchmarkLogReplayer;
+
 import replayer.ReplayerPerIteration;
 
 /**

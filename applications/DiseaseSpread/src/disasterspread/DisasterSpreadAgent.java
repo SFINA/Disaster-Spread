@@ -17,7 +17,7 @@
  */
 package disasterspread;
 
-import agent.BenchmarkSimulationAgent;
+
 import core.SimulationAgent;
 import disasterspread.input.DisasterSpreadNodeState;
 import disasterspread.input.DisasterSpreadLinkState;
