@@ -1,0 +1,12 @@
+.DS_Store
+_DS_Store
+*.class
+**/log/*
+**/nbproject/private/**
+**/build/**
+**/dist/lib/*
+**/peerlets-log/*/peer-*
+**/output/**/*.txt
+/applications/FlowVisualization/sfina2gephi/dist/
+/applications/FlowVisualization/SfinaVisualization/dist/
+/applications/DiseaseSpread/dist/
