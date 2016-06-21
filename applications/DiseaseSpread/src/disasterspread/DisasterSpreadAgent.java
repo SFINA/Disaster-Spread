@@ -48,7 +48,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     //private HashMap<String,ArrayList<Double>> nodeHealthHistory;
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
-    private int maxIterations = 100;
+    private int maxIterations = 5;
     private int strategy = 0;
     
     // resource distribution parameters from paper
@@ -274,7 +274,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 if (simulationTime >= 1) {
                     log.logTagSet(simulationTime, new HashSet(getFlowNetwork().getLinks()), simulationTime);
                     //before 0 to 42 or 114
-                    for (int i = 0; i < 1; i++) { //hardcoded because there is problem in time step for logreplayer
+                    for (int i = 0; i < 5; i++) { //hardcoded because there is problem in time step for logreplayer
                         for (Node node : getFlowNetwork().getNodes()) {
                             
                             log.log(simulationTime, "nodeDamageStatus" + Integer.toString(i), ((Double) damageStatus.get(i).get(Integer.parseInt(node.getIndex()) - 1)));
