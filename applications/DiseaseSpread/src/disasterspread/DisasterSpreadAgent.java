@@ -274,7 +274,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 if (simulationTime >= 1) {
                     log.logTagSet(simulationTime, new HashSet(getFlowNetwork().getLinks()), simulationTime);
                     //before 0 to 42 or 114
-                    for (int i = 0; i < 5; i++) { //hardcoded because there is problem in time step for logreplayer
+                    for (int i = 0; i < 4; i++) { //hardcoded because there is problem in time step for logreplayer
                         for (Node node : getFlowNetwork().getNodes()) {
                             
                             log.log(simulationTime, "nodeDamageStatus" + Integer.toString(i), ((Double) damageStatus.get(i).get(Integer.parseInt(node.getIndex()) - 1)));
