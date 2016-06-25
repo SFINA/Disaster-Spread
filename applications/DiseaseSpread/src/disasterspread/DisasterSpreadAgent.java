@@ -318,10 +318,12 @@ public class DisasterSpreadAgent extends SimulationAgent {
             int minIndex = degreeEndNode.indexOf(minDegree);
 
             Node node_min = getFlowNetwork().getNode(Integer.toString(minIndex));
-            String remLink = "";
+            //String remLink = "";
             //identify link
             Link rem_link1 = getFlowNetwork().getLink(node1, node_min);
+            //String indexLink1 = rem_link1.getIndex();
             Link rem_link2 = getFlowNetwork().getLink(node_min, node1);
+            //String indexLink2 = rem_link2.getIndex();
             node1.removeLink(rem_link1);
             node1.removeLink(rem_link2);
 //            for (Link link : node1.getLinks()) {
@@ -336,19 +338,19 @@ public class DisasterSpreadAgent extends SimulationAgent {
 //                }
 //            }
             Node node_max_degree = getFlowNetwork().getNode(sortDegree.get(sortDegree.size() - 1).getKey());
-            Link link1 = new Link(remLink, true);
-            link1.setIndex("543");
+            Link link1 = new Link(rem_link1.getIndex(), true);
+            //link1.setIndex("543");
             link1.setStartNode(node1);
             link1.setEndNode(node_max_degree);
             link1.isActivated();
             link1.isConnected();
-            link1.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
+            link1.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.1);
             link1.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.32);
 
             getFlowNetwork().addLink(link1);
 
-            Link link2 = new Link(remLink, true);
-            link2.setIndex(remLink.getIndex());
+            Link link2 = new Link(rem_link1.getIndex(), true);
+            //link2.setIndex(remLink.getIndex());
             link2.setEndNode(node1);
             link2.setStartNode(node_max_degree);
             link2.isActivated();
