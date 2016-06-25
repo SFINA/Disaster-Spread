@@ -43,7 +43,7 @@ import replayer.ReplayerPerIteration;
 public class TotalDamagedNodes extends SimulatedExperiment{
     private static final Logger logger = Logger.getLogger(TotalDamagedNodes.class);
     
-    private static String expSeqNum="Case500Grid_AverageDamage";
+    private static String expSeqNum="Random100";
     private final static String peersLogDirectory="peerlets-log/";
     private static String experimentID="experiment-"+expSeqNum;
     
@@ -56,10 +56,10 @@ public class TotalDamagedNodes extends SimulatedExperiment{
     public static int nodeToInfect;
     
     public static void main(String[] args){
-        //nodeToInfect = 2;
+        nodeToInfect = 1;
         if (args.length > 0) {
             try {
-                nodeToInfect = Integer.parseInt(args[0]);
+                //nodeToInfect = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 System.err.println("Argument" + args[0] + " must be an integer.");
                 System.exit(1);

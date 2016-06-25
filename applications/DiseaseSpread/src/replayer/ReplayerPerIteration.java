@@ -134,7 +134,7 @@ public class ReplayerPerIteration {
         //BenchmarkAnalysis smh = new BenchmarkAnalysis(expID, 0, 1000);
         //smh.powerPerIteration;
         
-        for (int i=0; i<4; i++){ //42 or 114 is the total number of iterations, 41 is total number of lines
+        for (int i=0; i<20; i++){ //42 or 114 is the total number of iterations, 41 is total number of lines
         double epochNum=epochNumber;
         
         double avgDamageStatusPerEpoch=(log.getAggregateByEpochNumber(epochNumber, "nodeDamageStatus"+Integer.toString(i)).getAverage());
