@@ -706,7 +706,7 @@ public class SimulationAgent extends BasePeerlet implements SimulationAgentInter
      * Has to be called at the end of the iteration.
      */
     public void nextIteration(){
-        this.saveOutputData();
+        //this.saveOutputData();
         this.iteration++;
     }
     
