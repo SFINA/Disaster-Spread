@@ -22,6 +22,9 @@ import disasterspread.input.DisasterSpreadNodeState;
 import disasterspread.input.DisasterSpreadLinkState;
 import disasterspread.backend.HelbingEtAlModelBackend;
 import disasterspread.backend.DisasterSpreadBackendParameter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import network.Link;
@@ -47,7 +50,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     //private HashMap<String,ArrayList<Double>> nodeHealthHistory;
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
-    private int maxIterations = 1;
+    private int maxIterations = 100;
     private int strategy = 0;
 
     // resource distribution parameters from paper
@@ -62,6 +65,8 @@ public class DisasterSpreadAgent extends SimulationAgent {
 
     private ArrayList<ArrayList<Double>> damageStatus = new ArrayList<ArrayList<Double>>();
     private ArrayList<ArrayList<Double>> damageLevel = new ArrayList<ArrayList<Double>>();
+    public ArrayList<Double> averagedamageStatus = new ArrayList<Double>();
+    public ArrayList<Double> averagedamageLevel = new ArrayList<Double>();
 
     public DisasterSpreadAgent(String experimentID,
             Time bootstrapTime,
@@ -113,11 +118,15 @@ public class DisasterSpreadAgent extends SimulationAgent {
                     damageStatusPerIteration.add(1.);
                 }
                 damageLevelPerIteration.add(n.getFlow());
+                
             }
 
             damageStatus.add(damageStatusPerIteration);
 
             damageLevel.add(damageLevelPerIteration);
+            
+            averagedamageLevel.add(calculateAverage(damageLevelPerIteration));
+            
 
         }
 
@@ -275,7 +284,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 if (simulationTime >= 1) {
                     log.logTagSet(simulationTime, new HashSet(getFlowNetwork().getLinks()), simulationTime);
                     //before 0 to 42 or 114
-                    for (int i = 0; i < 1; i++) { //hardcoded because there is problem in time step for logreplayer
+                    for (int i = 0; i < 100; i++) { //hardcoded because there is problem in time step for logreplayer
                         for (Node node : getFlowNetwork().getNodes()) {
                             //logger.info("Index out bound is  "+node.getIndex());
                             log.log(simulationTime, "nodeDamageStatus" + Integer.toString(i), ((Double) damageStatus.get(i).get(Integer.parseInt(node.getIndex()) - 1)));
@@ -370,5 +379,37 @@ public class DisasterSpreadAgent extends SimulationAgent {
 
         }
 
+    }
+    
+    @Override
+    public void runFinalOperations(){
+        try (
+                PrintStream outavgDamage = new PrintStream(new File("averageDamage"+Integer.toString(nodeToInfect)+".txt"));) {
+              String sc = "";
+            for (int m = 0; m < averagedamageLevel.size(); m++) {
+                
+                
+                    sc += averagedamageLevel.get(m) + " ";
+                }
+
+                outavgDamage.println(sc);
+            
+            outavgDamage.close();
+
+        } catch (FileNotFoundException p) {
+
+            p.printStackTrace();
+        }
+    }
+    
+    public double calculateAverage(ArrayList<Double> arrayList)
+    {
+       double sum = 0.0;
+       for(int i=0; i < arrayList.size(); i++) 
+        {
+            sum += arrayList.get(i);
+          }
+ 
+          return sum/arrayList.size();
     }
 }

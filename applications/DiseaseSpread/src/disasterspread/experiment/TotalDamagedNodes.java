@@ -50,16 +50,16 @@ public class TotalDamagedNodes extends SimulatedExperiment{
     //Simulation Parameters
     private final static int bootstrapTime=2000;
     private final static int runTime=1000;
-    private final static int runDuration=5;
+    private final static int runDuration=3;
     private final static int N=1;
     private final static String columnSeparator = ",";
     public static int nodeToInfect;
     
     public static void main(String[] args){
-        nodeToInfect = 1;
+        //nodeToInfect = 10;
         if (args.length > 0) {
             try {
-                //nodeToInfect = Integer.parseInt(args[0]);
+                nodeToInfect = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 System.err.println("Argument" + args[0] + " must be an integer.");
                 System.exit(1);
