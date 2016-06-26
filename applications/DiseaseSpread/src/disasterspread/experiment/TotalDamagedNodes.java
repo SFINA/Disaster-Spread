@@ -43,7 +43,7 @@ import replayer.ReplayerPerIteration;
 public class TotalDamagedNodes extends SimulatedExperiment{
     private static final Logger logger = Logger.getLogger(TotalDamagedNodes.class);
     
-    private static String expSeqNum="Random100";
+    private static String expSeqNum="Random500";
     private final static String peersLogDirectory="peerlets-log/";
     private static String experimentID="experiment-"+expSeqNum;
     

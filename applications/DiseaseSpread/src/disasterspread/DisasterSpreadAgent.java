@@ -47,7 +47,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     //private HashMap<String,ArrayList<Double>> nodeHealthHistory;
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
-    private int maxIterations = 20;
+    private int maxIterations = 1;
     private int strategy = 0;
 
     // resource distribution parameters from paper
@@ -89,7 +89,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
 
         for (int j = 0; j < maxIterations; j++) {
             if(j==10){
-                rewire();
+                //rewire();
             }
             /* At every iteration, compute the recovery rate of the Node. */
             for (Node n : getFlowNetwork().getNodes()) {
@@ -275,9 +275,9 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 if (simulationTime >= 1) {
                     log.logTagSet(simulationTime, new HashSet(getFlowNetwork().getLinks()), simulationTime);
                     //before 0 to 42 or 114
-                    for (int i = 0; i < 20; i++) { //hardcoded because there is problem in time step for logreplayer
+                    for (int i = 0; i < 1; i++) { //hardcoded because there is problem in time step for logreplayer
                         for (Node node : getFlowNetwork().getNodes()) {
-
+                            //logger.info("Index out bound is  "+node.getIndex());
                             log.log(simulationTime, "nodeDamageStatus" + Integer.toString(i), ((Double) damageStatus.get(i).get(Integer.parseInt(node.getIndex()) - 1)));
                             log.log(simulationTime, "nodeDamageLevel" + Integer.toString(i), ((Double) damageLevel.get(i).get(Integer.parseInt(node.getIndex()) - 1)));
                         }
