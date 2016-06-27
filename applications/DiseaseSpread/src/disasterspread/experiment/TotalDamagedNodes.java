@@ -56,7 +56,7 @@ public class TotalDamagedNodes extends SimulatedExperiment{
     public static int nodeToInfect;
     
     public static void main(String[] args){
-        //nodeToInfect = 38;
+        nodeToInfect = 38;
         if (args.length > 0) {
             try {
                 nodeToInfect = Integer.parseInt(args[0]);
