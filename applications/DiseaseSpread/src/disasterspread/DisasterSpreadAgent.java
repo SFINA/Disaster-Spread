@@ -94,7 +94,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
 
         for (int j = 0; j < maxIterations; j++) {
             if(j==10){
-                //rewire();
+                rewire();
             }
             /* At every iteration, compute the recovery rate of the Node. */
             for (Node n : getFlowNetwork().getNodes()) {
@@ -311,7 +311,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 return b.getValue().compareTo(a.getValue());
             }
         });
-        for (int i = 0; i < Math.ceil(0.1 * getFlowNetwork().getNodes().size()); i++) {
+        for (int i = 0; i < Math.ceil(0.5 * getFlowNetwork().getNodes().size()); i++) {
             highlyConnected10.add(sortDegree.get(i));
         }
 
@@ -360,8 +360,8 @@ public class DisasterSpreadAgent extends SimulationAgent {
             link1.setEndNode(node_max_degree);
             link1.isActivated();
             link1.isConnected();
-            link1.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.1);
-            link1.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.32);
+            link1.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
+            link1.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.4);
 
             getFlowNetwork().addLink(link1);
 
@@ -372,8 +372,8 @@ public class DisasterSpreadAgent extends SimulationAgent {
             link2.setStartNode(node_max_degree);
             link2.isActivated();
             link2.isConnected();
-            link2.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.1);
-            link2.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.32);
+            link2.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
+            link2.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.4);
 
             getFlowNetwork().addLink(link2);
 
