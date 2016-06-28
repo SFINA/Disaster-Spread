@@ -50,7 +50,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     //private HashMap<String,ArrayList<Double>> nodeHealthHistory;
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
-    private int maxIterations = 2;
+    private int maxIterations = 100;
     private int strategy = 0;
 
     // resource distribution parameters from paper
@@ -99,9 +99,9 @@ public class DisasterSpreadAgent extends SimulationAgent {
             beforeRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
         }
         for (int j = 0; j < maxIterations; j++) {
-            if (j == 1) {
+            if (j == 10) {
 
-                rewire();
+                //rewire();
 
             }
             /* At every iteration, compute the recovery rate of the Node. */
@@ -402,7 +402,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
             p.printStackTrace();
         }
         
-        writeBeforeAfterTopology();
+        //writeBeforeAfterTopology();
     }
 
     public double calculateAverage(ArrayList<Double> arrayList) {
@@ -416,16 +416,16 @@ public class DisasterSpreadAgent extends SimulationAgent {
 
     public void writeBeforeAfterTopology() {
         try (
-                PrintStream outavgDamage = new PrintStream(new File("beforeRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String sc = "";
+                PrintStream beforeRewireID = new PrintStream(new File("beforeRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String beforeID = "";
         for (Map.Entry<String, Integer> e : beforeRewiring) {
             String id = e.getKey();
             int degree = e.getValue();
-            sc += id + " ";
+            beforeID += id + " ";
         }
-         outavgDamage.println(sc);
+         beforeRewireID.println(beforeID);
 
-            outavgDamage.close();
+            beforeRewireID.close();
 
         } catch (FileNotFoundException p) {
 
@@ -434,16 +434,16 @@ public class DisasterSpreadAgent extends SimulationAgent {
         
         
         try (
-                PrintStream outavgDamage = new PrintStream(new File("beforeRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String sc = "";
+                PrintStream beforeRewireDegree = new PrintStream(new File("beforeRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String beforeDeg = "";
         for (Map.Entry<String, Integer> e : beforeRewiring) {
             String id = e.getKey();
             int degree = e.getValue();
-            sc += degree + " ";
+            beforeDeg += degree + " ";
         }
-         outavgDamage.println(sc);
+         beforeRewireDegree.println(beforeDeg);
 
-            outavgDamage.close();
+            beforeRewireDegree.close();
 
         } catch (FileNotFoundException p) {
 
@@ -451,16 +451,16 @@ public class DisasterSpreadAgent extends SimulationAgent {
         }
         
         try (
-                PrintStream outavgDamage = new PrintStream(new File("afterRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String sc = "";
+                PrintStream afterRewireID = new PrintStream(new File("afterRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String afterID = "";
         for (Map.Entry<String, Integer> e : afterRewiring) {
             String id = e.getKey();
             int degree = e.getValue();
-            sc += id + " ";
+            afterID += id + " ";
         }
-         outavgDamage.println(sc);
+         afterRewireID.println(afterID);
 
-            outavgDamage.close();
+            afterRewireID.close();
 
         } catch (FileNotFoundException p) {
 
@@ -468,16 +468,16 @@ public class DisasterSpreadAgent extends SimulationAgent {
         }
         
         try (
-                PrintStream outavgDamage = new PrintStream(new File("afterRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String sc = "";
-        for (Map.Entry<String, Integer> e : beforeRewiring) {
+                PrintStream afterRewireDegree = new PrintStream(new File("afterRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String afterDeg = "";
+        for (Map.Entry<String, Integer> e : afterRewiring) {
             String id = e.getKey();
             int degree = e.getValue();
-            sc += degree + " ";
+            afterDeg += degree + " ";
         }
-         outavgDamage.println(sc);
+         afterRewireDegree.println(afterDeg);
 
-            outavgDamage.close();
+            afterRewireDegree.close();
 
         } catch (FileNotFoundException p) {
 
