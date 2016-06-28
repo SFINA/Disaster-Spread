@@ -308,6 +308,40 @@ public class DisasterSpreadAgent extends SimulationAgent {
             }
         });
     }
+    
+    public void randomDamageSwap(){
+        // number of nodes to sample
+        int nodesToSwap = (int)(2*(Math.ceil((getFlowNetwork().getNodes().size()*0.3)/2))); // this division by two then ceil then multiplication by two guarantees that it is multiple of two
+        
+        ArrayList<Integer> shuffleID = new ArrayList<Integer>();
+        
+        for(int i =0;i<getFlowNetwork().getNodes().size();i++){
+            shuffleID.add(i);
+        }
+        
+        // shuffle the array (this is used to randomize the procedure)
+        Collections.shuffle(shuffleID);
+        
+        // in ideal world, node ID need not be fixed from 1 to 500, so we prepare a list of array indices:
+        ArrayList<String> nodeID = new ArrayList<String>();
+        for(Node n: getFlowNetwork().getNodes()){
+            nodeID.add(n.getIndex());
+        }
+        
+        // select two random nodes and swap values
+        for(int i = 0; i < nodesToSwap; i+=2){
+            String ID1=nodeID.get(shuffleID.get(i));
+            String ID2=nodeID.get(shuffleID.get(i+1));
+            // swap damage levels:
+            Double n1Damage = (Double)getFlowNetwork().getNode(ID1).getProperty(DisasterSpreadNodeState.DAMAGE);
+            Double n2Damage = (Double)getFlowNetwork().getNode(ID2).getProperty(DisasterSpreadNodeState.DAMAGE);
+            // replace value of node1:
+            getFlowNetwork().getNode(ID1).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, n2Damage);
+            getFlowNetwork().getNode(ID2).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, n1Damage);
+            
+        }
+        
+    }
 
     public void rewire() {
         List<Map.Entry<String, Integer>> sortDegree = new ArrayList<Map.Entry<String, Integer>>();
