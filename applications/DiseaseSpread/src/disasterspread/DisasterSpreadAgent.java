@@ -50,7 +50,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     //private HashMap<String,ArrayList<Double>> nodeHealthHistory;
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
-    private int maxIterations = 100;
+    private int maxIterations = 2;
     private int strategy = 0;
 
     // resource distribution parameters from paper
@@ -67,7 +67,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     private ArrayList<ArrayList<Double>> damageLevel = new ArrayList<ArrayList<Double>>();
     public ArrayList<Double> averagedamageStatus = new ArrayList<Double>();
     public ArrayList<Double> averagedamageLevel = new ArrayList<Double>();
-    
+
     List<Map.Entry<String, Integer>> beforeRewiring = new ArrayList<Map.Entry<String, Integer>>();
     List<Map.Entry<String, Integer>> afterRewiring = new ArrayList<Map.Entry<String, Integer>>();
 
@@ -95,19 +95,14 @@ public class DisasterSpreadAgent extends SimulationAgent {
             ((ArrayList<Double>) node.getProperty(DisasterSpreadNodeState.DAMAGEHISTORY)).add(0, node.getFlow());
         }
 
+        for (Node n : getFlowNetwork().getNodes()) {
+            beforeRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
+        }
         for (int j = 0; j < maxIterations; j++) {
-            if(j==10){
-                
-                for(Node n:getFlowNetwork().getNodes()){
-                    beforeRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
-                }
-                
+            if (j == 1) {
+
                 rewire();
-                
-                for(Node n:getFlowNetwork().getNodes()){
-                    afterRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
-                }
-                
+
             }
             /* At every iteration, compute the recovery rate of the Node. */
             for (Node n : getFlowNetwork().getNodes()) {
@@ -131,16 +126,18 @@ public class DisasterSpreadAgent extends SimulationAgent {
                     damageStatusPerIteration.add(1.);
                 }
                 damageLevelPerIteration.add(n.getFlow());
-                
+
             }
 
             damageStatus.add(damageStatusPerIteration);
 
             damageLevel.add(damageLevelPerIteration);
-            
-            averagedamageLevel.add(calculateAverage(damageLevelPerIteration));
-            
 
+            averagedamageLevel.add(calculateAverage(damageLevelPerIteration));
+
+        }
+        for (Node n : getFlowNetwork().getNodes()) {
+            afterRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
         }
 
     }
@@ -324,7 +321,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 return a.getValue().compareTo(b.getValue());
             }
         });
-        
+
         // can be removed
         for (int i = 0; i < Math.ceil(0.5 * getFlowNetwork().getNodes().size()); i++) {
             highlyConnected10.add(sortDegree.get(i));
@@ -334,66 +331,152 @@ public class DisasterSpreadAgent extends SimulationAgent {
             List<Map.Entry<Integer, String>> remLink = new ArrayList<Map.Entry<Integer, String>>();
             Node node1 = getFlowNetwork().getNode(highlyConnected10.get(i).getKey());
             for (Link link : node1.getOutgoingLinks()) {
-                remLink.add(new AbstractMap.SimpleEntry<Integer, String>(link.getEndNode().getOutgoingLinks().size(),link.getEndNode().getIndex()));
+                remLink.add(new AbstractMap.SimpleEntry<Integer, String>(link.getEndNode().getOutgoingLinks().size(), link.getEndNode().getIndex()));
             }
-            
+
             Collections.sort(remLink, new Comparator<Map.Entry<Integer, String>>() {
                 public int compare(Map.Entry<Integer, String> a, Map.Entry<Integer, String> b) {
                     return a.getKey().compareTo(b.getKey());
                 }
             });
-            
-            for(int k = 0; k < Math.ceil((remLink.size())*0.5); k++ ){
+
+            for (int k = 0; k < Math.ceil((remLink.size()) * 0.8); k++) {
                 // remove each individual link
+
                 Node node_min = getFlowNetwork().getNode(remLink.get(k).getValue());
-                if(node_min.getOutgoingLinks().size() != 1 && node1.getOutgoingLinks().size() != 1){
-                    
-                    Link rem_link1 = getFlowNetwork().getLink(node1, node_min);
-                    String indexLink1 = rem_link1.getIndex();
+                if (node_min.getOutgoingLinks().size() != 1 && node1.getOutgoingLinks().size() != 1) { //To-Do check error
+                    if (getFlowNetwork().getLink(node1, node_min) != null && getFlowNetwork().getLink(node_min, node1) != null) {
 
-                    Link rem_link2 = getFlowNetwork().getLink(node_min, node1);
-                    String indexLink2 = rem_link2.getIndex();
+                        Link rem_link1 = getFlowNetwork().getLink(node1, node_min);
 
-                    node1.removeLink(rem_link1);
-                    node1.removeLink(rem_link2);
-                    Node node_max_degree = getFlowNetwork().getNode(sortDegree.get(sortDegree.size() - k - 1).getKey());
+                        String indexLink1 = rem_link1.getIndex();
 
-                    Link link1 = new Link(indexLink1, true);
-                    link1.setStartNode(node1);
-                    link1.setEndNode(node_max_degree);
-                    link1.isActivated();
-                    link1.isConnected();
-                    link1.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
-                    link1.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.4);
-                    getFlowNetwork().addLink(link1);
+                        Link rem_link2 = getFlowNetwork().getLink(node_min, node1);
+                        String indexLink2 = rem_link2.getIndex();
 
-                    Link link2 = new Link(indexLink2, true);
-                    link2.setEndNode(node1);
-                    link2.setStartNode(node_max_degree);
-                    link2.isActivated();
-                    link2.isConnected();
-                    link2.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
-                    link2.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.4);
-                    getFlowNetwork().addLink(link2);
-                    
+                        node1.removeLink(rem_link1);
+                        node1.removeLink(rem_link2);
+                        Node node_max_degree = getFlowNetwork().getNode(sortDegree.get(sortDegree.size() - k - 1).getKey());
+
+                        Link link1 = new Link(indexLink1, true);
+                        link1.setStartNode(node1);
+                        link1.setEndNode(node_max_degree);
+                        link1.isActivated();
+                        link1.isConnected();
+                        link1.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
+                        link1.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.4);
+                        getFlowNetwork().addLink(link1);
+
+                        Link link2 = new Link(indexLink2, true);
+                        link2.setEndNode(node1);
+                        link2.setStartNode(node_max_degree);
+                        link2.isActivated();
+                        link2.isConnected();
+                        link2.addProperty(DisasterSpreadLinkState.CONNECTION_STRENGTH, 0.5);
+                        link2.addProperty(DisasterSpreadLinkState.TIME_DELAY, 1.4);
+                        getFlowNetwork().addLink(link2);
+
+                    }
+
                 }
             }
         }
-   }
-    
-    @Override
-    public void runFinalOperations(){
-        try (
-                PrintStream outavgDamage = new PrintStream(new File("averageDamage"+Integer.toString(nodeToInfect)+".txt"));) {
-              String sc = "";
-            for (int m = 0; m < averagedamageLevel.size(); m++) {
-                
-                
-                    sc += averagedamageLevel.get(m) + " ";
-                }
+    }
 
-                outavgDamage.println(sc);
-            
+    @Override
+    public void runFinalOperations() {
+        try (
+                PrintStream outavgDamage = new PrintStream(new File("averageDamage" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String sc = "";
+            for (int m = 0; m < averagedamageLevel.size(); m++) {
+
+                sc += averagedamageLevel.get(m) + " ";
+            }
+
+            outavgDamage.println(sc);
+
+            outavgDamage.close();
+
+        } catch (FileNotFoundException p) {
+
+            p.printStackTrace();
+        }
+        
+        writeBeforeAfterTopology();
+    }
+
+    public double calculateAverage(ArrayList<Double> arrayList) {
+        double sum = 0.0;
+        for (int i = 0; i < arrayList.size(); i++) {
+            sum += arrayList.get(i);
+        }
+
+        return sum / arrayList.size();
+    }
+
+    public void writeBeforeAfterTopology() {
+        try (
+                PrintStream outavgDamage = new PrintStream(new File("beforeRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String sc = "";
+        for (Map.Entry<String, Integer> e : beforeRewiring) {
+            String id = e.getKey();
+            int degree = e.getValue();
+            sc += id + " ";
+        }
+         outavgDamage.println(sc);
+
+            outavgDamage.close();
+
+        } catch (FileNotFoundException p) {
+
+            p.printStackTrace();
+        }
+        
+        
+        try (
+                PrintStream outavgDamage = new PrintStream(new File("beforeRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String sc = "";
+        for (Map.Entry<String, Integer> e : beforeRewiring) {
+            String id = e.getKey();
+            int degree = e.getValue();
+            sc += degree + " ";
+        }
+         outavgDamage.println(sc);
+
+            outavgDamage.close();
+
+        } catch (FileNotFoundException p) {
+
+            p.printStackTrace();
+        }
+        
+        try (
+                PrintStream outavgDamage = new PrintStream(new File("afterRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String sc = "";
+        for (Map.Entry<String, Integer> e : afterRewiring) {
+            String id = e.getKey();
+            int degree = e.getValue();
+            sc += id + " ";
+        }
+         outavgDamage.println(sc);
+
+            outavgDamage.close();
+
+        } catch (FileNotFoundException p) {
+
+            p.printStackTrace();
+        }
+        
+        try (
+                PrintStream outavgDamage = new PrintStream(new File("afterRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
+            String sc = "";
+        for (Map.Entry<String, Integer> e : beforeRewiring) {
+            String id = e.getKey();
+            int degree = e.getValue();
+            sc += degree + " ";
+        }
+         outavgDamage.println(sc);
+
             outavgDamage.close();
 
         } catch (FileNotFoundException p) {
@@ -401,22 +484,4 @@ public class DisasterSpreadAgent extends SimulationAgent {
             p.printStackTrace();
         }
     }
-    
-    public double calculateAverage(ArrayList<Double> arrayList)
-    {
-       double sum = 0.0;
-       for(int i=0; i < arrayList.size(); i++) 
-        {
-            sum += arrayList.get(i);
-          }
- 
-          return sum/arrayList.size();
-    }
 }
-
-// how to write array to file:
-//for(Entry<Integer, String> e: beforeRewiring){
-//    String id = e.getKey();
-//    int degree = e.getValue();
-//    printToFile(id+";"+degree+";");
-//}
