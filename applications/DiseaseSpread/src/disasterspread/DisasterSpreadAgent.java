@@ -51,7 +51,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
     private int maxIterations = 100;
-    private int strategy = 0;
+    private int strategy = 4;
 
     // resource distribution parameters from paper
     private final double a1 = 530;//10;//
@@ -100,7 +100,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
         }
         for (int j = 0; j < maxIterations; j++) {
             if (j == 10) {
-
+                //randomDamageSwap();
                 //rewire();
 
             }
@@ -311,7 +311,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
     
     public void randomDamageSwap(){
         // number of nodes to sample
-        int nodesToSwap = (int)(2*(Math.ceil((getFlowNetwork().getNodes().size()*0.3)/2))); // this division by two then ceil then multiplication by two guarantees that it is multiple of two
+        int nodesToSwap = (int)(2*(Math.ceil((getFlowNetwork().getNodes().size()*0.4)/2))); // this division by two then ceil then multiplication by two guarantees that it is multiple of two
         
         ArrayList<Integer> shuffleID = new ArrayList<Integer>();
         
