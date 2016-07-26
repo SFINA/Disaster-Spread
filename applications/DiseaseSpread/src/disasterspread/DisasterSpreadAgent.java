@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
 package disasterspread;
 
 import core.SimulationAgent;
@@ -24,6 +25,7 @@ import disasterspread.backend.HelbingEtAlModelBackend;
 import disasterspread.backend.DisasterSpreadBackendParameter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import network.Node;
 import org.apache.log4j.Logger;
 import java.util.AbstractMap;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,68 +54,122 @@ public class DisasterSpreadAgent extends SimulationAgent {
     private double timeStep = 0.1;
     private static final Logger logger = Logger.getLogger(DisasterSpreadAgent.class);
     private int maxIterations = 100;
-    private int strategy = 4;
+    private int strategy=0;
 
     // resource distribution parameters from paper
-    private final double a1 = 530;//10;//
-    private final double b1 = .6;//1;//
-    private final double c1 = .2;//0.01;//
+    private double a1 = 25;//530;//
+    private double b1 = 1.1;//1.6;//
+    private double c1 = 0.03;//.22;//
 
     // strategy constants from paper
     private final double q = 0.15;
     private final double k = 0.8;
     public int nodeToInfect;
-
+    public String experimentName;
+    public int experimentNo;
+//    public int tD = 8;
+//    public int endTime = 100;
+//    public int shift = tD;
+//    public int keepInfecting = 0;
+//    public double iV = 1;
+    
     private ArrayList<ArrayList<Double>> damageStatus = new ArrayList<ArrayList<Double>>();
     private ArrayList<ArrayList<Double>> damageLevel = new ArrayList<ArrayList<Double>>();
     public ArrayList<Double> averagedamageStatus = new ArrayList<Double>();
     public ArrayList<Double> averagedamageLevel = new ArrayList<Double>();
-
+    
     List<Map.Entry<String, Integer>> beforeRewiring = new ArrayList<Map.Entry<String, Integer>>();
     List<Map.Entry<String, Integer>> afterRewiring = new ArrayList<Map.Entry<String, Integer>>();
-
+    
+    
     public DisasterSpreadAgent(String experimentID,
             Time bootstrapTime,
-            Time runTime, int nodeToInfect) {
-        super(experimentID,
+            Time runTime, int nodeToInfect, int experimentNo, String experimentName, int strategy) { //, double a1, double a2, double a3, int startTime, int endTime, int shift, int kI, double iV
+        super(experimentName,
                 bootstrapTime,
                 runTime);
+        this.strategy = strategy;
         this.nodeToInfect = nodeToInfect;
+        this.experimentNo = experimentNo;
+        this.experimentName = experimentName;
+        
+        this.nodeToInfected(Integer.toString(nodeToInfect));
+        this.setExperimentNo(Integer.toString(experimentNo));
+        this.setExperimentName(experimentName);
+        this.setStrategy(Integer.toString(strategy));
+        
+//        this.tD= startTime;
+//        this.endTime=endTime;
+//        this.a1 = a1;
+//        this.b1 = a2;
+//        this.c1 = a3;
+//        this.shift = shift;
+//        this.keepInfecting = kI;
+//        this.iV=iV;
     }
-
+    
     @Override
     public void runFlowAnalysis() {
 //        for (int i = 1; i < getFlowNetwork().getNodes().size()+1; i++) {
-        getFlowNetwork().getNode(Integer.toString(nodeToInfect)).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, 1.);
+        getFlowNetwork().getNode(Integer.toString(nodeToInfect)).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, 4.);
 
         for (Node node : getFlowNetwork().getNodes()) {
             node.addProperty(DisasterSpreadNodeState.DAMAGEHISTORY, new ArrayList<Double>(Collections.nCopies(maxHistory(), 0.0)));
         }
         /* DAMAGEHISTORY is not loaded from files. It is initialized with current damage level and 
          updated in every iteration. */
-
+        
+        
         for (Node node : getFlowNetwork().getNodes()) {
             ((ArrayList<Double>) node.getProperty(DisasterSpreadNodeState.DAMAGEHISTORY)).add(0, node.getFlow());
         }
+        
+        
 
-        for (Node n : getFlowNetwork().getNodes()) {
-            beforeRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
-        }
         for (int j = 0; j < maxIterations; j++) {
-            if (j == 10) {
-                //randomDamageSwap();
-                //rewire();
-
-            }
+            
+            // keep the health of infected node constant for first 8 iterations:
+//            if(keepInfecting==1){
+//                if(j<10){
+//                    getFlowNetwork().getNode(Integer.toString(nodeToInfect)).replacePropertyElement(DisasterSpreadNodeState.DAMAGE, iV);
+//                    ((ArrayList<Double>)(getFlowNetwork().getNode(Integer.toString(nodeToInfect))).getProperty(DisasterSpreadNodeState.DAMAGEHISTORY)).set(0, (double)iV);
+//                }
+//            }
+            
+            
+            
             /* At every iteration, compute the recovery rate of the Node. */
+            
+            
+            
+            
+            // compute resources:
+            HashMap<String,Double> recoveryRate = new HashMap<String, Double>();
+            
             for (Node n : getFlowNetwork().getNodes()) {
-                n.addProperty(DisasterSpreadNodeState.RECOVERYRATE, recoveryRate(n));
+                recoveryRate.put(n.getIndex(),recoveryRate(n));
+            }
+            
+            // replace resources:
+            for (Node n : getFlowNetwork().getNodes()) {
+                n.addProperty(DisasterSpreadNodeState.RECOVERYRATE, recoveryRate.get(n.getIndex()));
             }
 
             callBackend(getFlowNetwork());
+            
 
+            // write to file:
+            
+            
             System.out.println("Total Damaged Nodes: " + totalDamagedNodes());
-
+            try {
+                PrintStream tST = new PrintStream(new FileOutputStream("../exp"+experimentNo+"/benchmarkTotalDamagedNodes/str"+strategy+"/"+experimentName+"/totalDamagedNodes"+nodeToInfect + ".txt",true));
+                tST.println(getIteration()+","+totalDamagedNodes());
+                tST.close();
+            } catch (FileNotFoundException p) {
+                p.printStackTrace();
+            }
+            
             nextIteration();
 
             ArrayList<Double> damageStatusPerIteration = new ArrayList<Double>();
@@ -134,11 +191,20 @@ public class DisasterSpreadAgent extends SimulationAgent {
             damageLevel.add(damageLevelPerIteration);
 
             averagedamageLevel.add(calculateAverage(damageLevelPerIteration));
+            
+//            try {
+//                PrintStream tST = new PrintStream(new FileOutputStream("totalDamagedNodesStr-"+Integer.toString(strategy)+"infect-"+Integer.toString(nodeToInfect)+".txt",true));
+//                tST.println(Integer.toString(j)+","+totalDamagedNodes());
+//                tST.close();
+//            } catch (FileNotFoundException p) {
+//                p.printStackTrace();
+//            }
+            
 
         }
-        for (Node n : getFlowNetwork().getNodes()) {
-            afterRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
-        }
+//        for (Node n : getFlowNetwork().getNodes()) {
+//            afterRewiring.add(new AbstractMap.SimpleEntry<String, Integer>(n.getIndex(), n.getOutgoingLinks().size()));
+//        }
 
     }
 
@@ -153,12 +219,12 @@ public class DisasterSpreadAgent extends SimulationAgent {
     }
 
     private double externalResource(Node node) {
-
+        
         if (this.getIteration() < 10) {
             return 0;
         }
 
-        double r = a1 * Math.pow(this.getIteration() - 10, b1) * Math.exp(-c1 * (this.getIteration() - 10));
+        double r = a1 * Math.pow(this.getIteration()-10, b1) * Math.exp(-c1 * (this.getIteration()-10));
         int damaged = 0;
         int challenged = 0;
         double theta = (Double) node.getProperty(DisasterSpreadNodeState.TOLERANCE);
@@ -294,7 +360,7 @@ public class DisasterSpreadAgent extends SimulationAgent {
                 if (simulationTime >= 1) {
                     log.logTagSet(simulationTime, new HashSet(getFlowNetwork().getLinks()), simulationTime);
                     //before 0 to 42 or 114
-                    for (int i = 0; i < 100; i++) { //hardcoded because there is problem in time step for logreplayer
+                    for (int i = 0; i < maxIterations; i++) { //hardcoded because there is problem in time step for logreplayer
                         for (Node node : getFlowNetwork().getNodes()) {
                             //logger.info("Index out bound is  "+node.getIndex());
                             log.log(simulationTime, "nodeDamageStatus" + Integer.toString(i), ((Double) damageStatus.get(i).get(Integer.parseInt(node.getIndex()) - 1)));
@@ -420,22 +486,17 @@ public class DisasterSpreadAgent extends SimulationAgent {
     @Override
     public void runFinalOperations() {
         try (
-                PrintStream outavgDamage = new PrintStream(new File("averageDamage" + Integer.toString(nodeToInfect) + ".txt"));) {
+            PrintStream outavgDamage = new PrintStream(new File("../exp"+Integer.toString(experimentNo)+"/benchmarkAverageDamage/str"+Integer.toString(strategy)+"/"+experimentName+"/"+"averageDamage"+Integer.toString(nodeToInfect) + ".txt"));) {
             String sc = "";
             for (int m = 0; m < averagedamageLevel.size(); m++) {
 
                 sc += averagedamageLevel.get(m) + " ";
             }
-
             outavgDamage.println(sc);
-
             outavgDamage.close();
-
         } catch (FileNotFoundException p) {
-
             p.printStackTrace();
         }
-        
         //writeBeforeAfterTopology();
     }
 
@@ -448,74 +509,74 @@ public class DisasterSpreadAgent extends SimulationAgent {
         return sum / arrayList.size();
     }
 
-    public void writeBeforeAfterTopology() {
-        try (
-                PrintStream beforeRewireID = new PrintStream(new File("beforeRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String beforeID = "";
-        for (Map.Entry<String, Integer> e : beforeRewiring) {
-            String id = e.getKey();
-            int degree = e.getValue();
-            beforeID += id + " ";
-        }
-         beforeRewireID.println(beforeID);
-
-            beforeRewireID.close();
-
-        } catch (FileNotFoundException p) {
-
-            p.printStackTrace();
-        }
-        
-        
-        try (
-                PrintStream beforeRewireDegree = new PrintStream(new File("beforeRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String beforeDeg = "";
-        for (Map.Entry<String, Integer> e : beforeRewiring) {
-            String id = e.getKey();
-            int degree = e.getValue();
-            beforeDeg += degree + " ";
-        }
-         beforeRewireDegree.println(beforeDeg);
-
-            beforeRewireDegree.close();
-
-        } catch (FileNotFoundException p) {
-
-            p.printStackTrace();
-        }
-        
-        try (
-                PrintStream afterRewireID = new PrintStream(new File("afterRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String afterID = "";
-        for (Map.Entry<String, Integer> e : afterRewiring) {
-            String id = e.getKey();
-            int degree = e.getValue();
-            afterID += id + " ";
-        }
-         afterRewireID.println(afterID);
-
-            afterRewireID.close();
-
-        } catch (FileNotFoundException p) {
-
-            p.printStackTrace();
-        }
-        
-        try (
-                PrintStream afterRewireDegree = new PrintStream(new File("afterRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
-            String afterDeg = "";
-        for (Map.Entry<String, Integer> e : afterRewiring) {
-            String id = e.getKey();
-            int degree = e.getValue();
-            afterDeg += degree + " ";
-        }
-         afterRewireDegree.println(afterDeg);
-
-            afterRewireDegree.close();
-
-        } catch (FileNotFoundException p) {
-
-            p.printStackTrace();
-        }
-    }
+//    public void writeBeforeAfterTopology() {
+//        try (
+//                PrintStream beforeRewireID = new PrintStream(new File("beforeRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
+//            String beforeID = "";
+//        for (Map.Entry<String, Integer> e : beforeRewiring) {
+//            String id = e.getKey();
+//            int degree = e.getValue();
+//            beforeID += id + " ";
+//        }
+//         beforeRewireID.println(beforeID);
+//
+//            beforeRewireID.close();
+//
+//        } catch (FileNotFoundException p) {
+//
+//            p.printStackTrace();
+//        }
+//        
+//        
+//        try (
+//                PrintStream beforeRewireDegree = new PrintStream(new File("beforeRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
+//            String beforeDeg = "";
+//        for (Map.Entry<String, Integer> e : beforeRewiring) {
+//            String id = e.getKey();
+//            int degree = e.getValue();
+//            beforeDeg += degree + " ";
+//        }
+//         beforeRewireDegree.println(beforeDeg);
+//
+//            beforeRewireDegree.close();
+//
+//        } catch (FileNotFoundException p) {
+//
+//            p.printStackTrace();
+//        }
+//        
+//        try (
+//                PrintStream afterRewireID = new PrintStream(new File("afterRewireID" + Integer.toString(nodeToInfect) + ".txt"));) {
+//            String afterID = "";
+//        for (Map.Entry<String, Integer> e : afterRewiring) {
+//            String id = e.getKey();
+//            int degree = e.getValue();
+//            afterID += id + " ";
+//        }
+//         afterRewireID.println(afterID);
+//
+//            afterRewireID.close();
+//
+//        } catch (FileNotFoundException p) {
+//
+//            p.printStackTrace();
+//        }
+//        
+//        try (
+//                PrintStream afterRewireDegree = new PrintStream(new File("afterRewireDegree" + Integer.toString(nodeToInfect) + ".txt"));) {
+//            String afterDeg = "";
+//        for (Map.Entry<String, Integer> e : afterRewiring) {
+//            String id = e.getKey();
+//            int degree = e.getValue();
+//            afterDeg += degree + " ";
+//        }
+//         afterRewireDegree.println(afterDeg);
+//
+//            afterRewireDegree.close();
+//
+//        } catch (FileNotFoundException p) {
+//
+//            p.printStackTrace();
+//        }
+//    }
 }

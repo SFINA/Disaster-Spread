@@ -43,7 +43,7 @@ import replayer.ReplayerPerIteration;
 public class TotalDamagedNodes extends SimulatedExperiment{
     private static final Logger logger = Logger.getLogger(TotalDamagedNodes.class);
     
-    private static String expSeqNum="Case500Grid_AverageDamage";
+    private static String expSeqNum="Case100Grid_AverageDamagedNodes";
     private final static String peersLogDirectory="peerlets-log/";
     private static String experimentID="experiment-"+expSeqNum;
     
@@ -54,12 +54,39 @@ public class TotalDamagedNodes extends SimulatedExperiment{
     private final static int N=1;
     private final static String columnSeparator = ",";
     public static int nodeToInfect;
+    public static int experimentNo;
+    public static String experimentName;
+    public static int strategy;
+    //strategy parameters:
+//    public static double a1=10;//531;
+//    public static double a2=1;//1.6;
+//    public static double a3=0.01;//0.69;
+//    public static int startTime = 8;
+//    public static int endTime = 100;
+//    public static int shift = 8;
+//    public static int kI = 0;
+//    public static double iV = 1;
     
     public static void main(String[] args){
-       //nodeToInfect = 38;
-        if (args.length > 0) {
+       nodeToInfect = 12;
+       experimentNo = 1;
+       experimentName = "experiment-Case100Grid_AverageDamagedNodes";
+       strategy = 3;
+
+        if (args.length > 3) {
             try {
                 nodeToInfect = Integer.parseInt(args[0]);
+                experimentNo = Integer.parseInt(args[1]);
+                experimentName = args[2];
+                strategy = Integer.parseInt(args[3]);
+//                a1=Double.parseDouble(args[4]);
+//                a2=Double.parseDouble(args[5]);
+//                a3=Double.parseDouble(args[6]);
+//                startTime = Integer.parseInt(args[7]);
+//                endTime = Integer.parseInt(args[8]);
+//                shift = Integer.parseInt(args[9]);
+//                kI = Integer.parseInt(args[10]);
+//                iV = Double.parseDouble(args[11]);
             } catch (NumberFormatException e) {
                 System.err.println("Argument" + args[0] + " must be an integer.");
                 System.exit(1);
@@ -67,7 +94,7 @@ public class TotalDamagedNodes extends SimulatedExperiment{
         }
         
         run();
-        ReplayerPerIteration replayer = new ReplayerPerIteration(expSeqNum, 0, 1000, nodeToInfect);
+        //ReplayerPerIteration replayer = new ReplayerPerIteration(expSeqNum, 0, 1000, nodeToInfect);
     }
     
     public static void run() {
@@ -84,7 +111,7 @@ public class TotalDamagedNodes extends SimulatedExperiment{
                 newPeer.addPeerlet(new DisasterSpreadAgent(
                         experimentID,
                         Time.inMilliseconds(bootstrapTime),
-                        Time.inMilliseconds(runTime), nodeToInfect));
+                        Time.inMilliseconds(runTime), nodeToInfect, experimentNo, experimentName, strategy)); // , a1,a2,a3,startTime,endTime, shift, kI,iV
                 return newPeer;
             }
         };
@@ -94,7 +121,6 @@ public class TotalDamagedNodes extends SimulatedExperiment{
         test.runSimulation(Time.inSeconds(runDuration));
     }
 
-    
     public final static void clearExperimentFile(File experiment){
         File[] files = experiment.listFiles();
         if(files!=null) { //some JVMs return null for empty dirs

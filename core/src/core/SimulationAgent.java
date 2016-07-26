@@ -56,6 +56,8 @@ import power.input.PowerFlowLoader;
 import power.input.PowerLinkState;
 import power.input.PowerNodeState;
 import diseasespread.output.DisasterSpreadFlowWriter;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import power.output.PowerFlowWriter;
 import protopeer.BasePeerlet;
 import protopeer.Peer;
@@ -107,6 +109,13 @@ public class SimulationAgent extends BasePeerlet implements SimulationAgentInter
     private Domain domain;
     private PowerBackend backend;
     private ArrayList<Event> events;
+    
+    private long flowSimuTime=0;
+    private long totalSimuTime=0;
+    private String nodeToInfect; 
+    private String experimentNo;
+    private String strategy;
+    private String experimentName;
     
     public SimulationAgent(
             String experimentID,
@@ -194,6 +203,7 @@ public class SimulationAgent extends BasePeerlet implements SimulationAgentInter
         Timer loadAgentTimer=getPeer().getClock().createNewTimer();
         loadAgentTimer.addTimerListener(new TimerListener(){
             public void timerExpired(Timer timer){
+                long simulationStartTime = System.currentTimeMillis();
                 timeToken = timeTokenName + getSimulationTime();
                 logger.info("--------------> " + timeToken + " <--------------");
                 
@@ -208,6 +218,11 @@ public class SimulationAgent extends BasePeerlet implements SimulationAgentInter
                 runFlowAnalysis();
                 
                 runFinalOperations();
+                
+                // TODO
+                totalSimuTime = (System.currentTimeMillis()-simulationStartTime);
+                writeSimulationTime("totalSimuTime.txt",totalSimuTime);
+                writeSimulationTime("flowSimuTime.txt",flowSimuTime);
                 
                 runActiveState(); 
             }
@@ -646,7 +661,9 @@ public class SimulationAgent extends BasePeerlet implements SimulationAgentInter
                 switch(getBackend()){
                     case HELBINGETAL:
                         flowBackend=new HelbingEtAlModelBackend();
+                        long simulationStartTime = System.currentTimeMillis();
                         converged=flowBackend.flowAnalysis(flowNetwork, getBackendParameters());
+                        flowSimuTime+=(System.currentTimeMillis()-simulationStartTime);
                         break;
                     default:
                         logger.debug("This flow backend is not supported at this moment.");
@@ -808,4 +825,31 @@ public class SimulationAgent extends BasePeerlet implements SimulationAgentInter
     public void setMeasurementDumper(MeasurementFileDumper measurementDumper) {
         this.measurementDumper = measurementDumper;
     }
+    
+    public void nodeToInfected(String Id){
+        this.nodeToInfect = Id;
+    }
+    
+    public void setExperimentNo(String Id){
+        this.experimentNo=Id;
+    }
+    
+    public void writeSimulationTime(String file, long duration){
+        try {
+            PrintStream tST = new PrintStream(new FileOutputStream("../exp"+experimentNo+"/benchmarkTime/str"+strategy+"/"+experimentName+"/"+file+nodeToInfect + ".txt",true));
+            tST.println(nodeToInfect+","+duration);
+            tST.close();
+        } catch (FileNotFoundException p) {
+            p.printStackTrace();
+        }
+    }
+    
+    public void setExperimentName(String experimentName){
+        this.experimentName = experimentName;
+    };
+    
+    public void setStrategy(String strategy){
+        this.strategy = strategy;
+    };
+    
 }
