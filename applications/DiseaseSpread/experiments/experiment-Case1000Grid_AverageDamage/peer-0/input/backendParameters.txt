@@ -1,2 +1,0 @@
-strategy=5
-nodeDamageHistory=0
